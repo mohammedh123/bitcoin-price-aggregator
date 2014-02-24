@@ -74,4 +74,7 @@ server.listen(app.get('port'), function(){
 			mostRecentTrades.push(newTrade);
 		}
 	});
+	socket.on('disconnect', function() {
+		console.log("Disconnected from MtGox websocket.");
+	});
 });
