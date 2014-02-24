@@ -5,7 +5,7 @@
  
 // app-specific stuff
 // objects will have:
-// 	a. timestamp
+// 	a. timestamp (divide by 1e6)
 //	b. quantity (divide by 1e8)
 //	c. price (divide by 1e8)
 //	d. exchange name
@@ -18,6 +18,7 @@ var http = require('http');
 var path = require('path');
 var util = require('util');
 var io = require('socket.io-client');
+var _ = require('underscore')._; // dear god
 
 var app = express();
 
@@ -41,14 +42,23 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
+function GetMostRecentTrades(limit)
+{
+	return _.chain(mostRecentTrades)
+	.values()
+	.sortBy(function(obj) {
+		return -1*obj.timestamp; //descending order of timestamp
+	}).value().slice(0,limit);
+}
+
 // maybe use a js object instead
 function AddTrade(timestamp, price, quantity, exchange, id)
 {
 	var newTrade = {};
 	
-	newTrade.timestamp = timestamp;
-	newTrade.price = price;
-	newTrade.quantity = quantity;
+	newTrade.timestamp = parseInt(timestamp, 10);
+	newTrade.price = parseInt(price, 10);
+	newTrade.quantity = parseInt(quantity, 10);
 	newTrade.exchange = exchange;
 	newTrade.id = parseInt(id, 10);
 	
@@ -78,7 +88,7 @@ function UpdateTrades() {
 					// we now have the trade info in a json object, add it to the list
 					var currTrade = trades[i];
 					
-					AddTrade(currTrade.date, currTrade.price*100000000, currTrade.amount*100000000, "Bitstamp", currTrade.tid);
+					AddTrade(currTrade.date*1000000, currTrade.price*100000000, currTrade.amount*100000000, "Bitstamp", currTrade.tid);
 				}
 			});
 		}
@@ -91,11 +101,17 @@ function UpdateTrades() {
 setInterval(UpdateTrades, 60000);
 
 app.get('/', routes.index);
+
+// GET /TradeData[?RecentNum=N]
 app.get('/TradeData', function(req, res){	
-	res.json(mostRecentTrades);
-});
-app.get('/TradeData?:RecentNum', function(req, res){	
-	res.json(mostRecentTrades);
+	var limit = req.query.RecentNum || -1;
+	
+	if(limit <= 0) {
+		res.json(mostRecentTrades);
+	}
+	else {
+		res.json(GetMostRecentTrades(limit));
+	}
 });
 
 var server = http.createServer(app);
@@ -113,7 +129,7 @@ server.listen(app.get('port'), function(){
 	});
 	socket.on('message', function(data) {		
 		if(data.op == "private" && data.private == "trade") {
-			AddTrade(data.trade.tid/1000000, data.trade.price_int*1000, data.trade.amount_int, "MtGox", data.trade.tid);
+			AddTrade(data.trade.tid, data.trade.price_int*1000, data.trade.amount_int, "MtGox", data.trade.tid);
 		}
 	});
 	socket.on('disconnect', function() {
