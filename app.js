@@ -63,7 +63,6 @@ server.listen(app.get('port'), function(){
 	});
 	socket.on('message', function(data) {		
 		if(data.op == "private" && data.private == "trade") {
-			console.log("hello");
 			var newTrade = {};
 			
 			newTrade.timestamp = data.trade.tid;
