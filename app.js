@@ -116,5 +116,7 @@ server.listen(app.get('port'), function(){
 	});
 	socket.on('disconnect', function() {
 		util.log("Disconnected from MtGox websocket.");
+		util.log("Attempting to reconnect to MtGox websocket...");
+		socket.reconnect();
 	});
 });
