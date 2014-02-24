@@ -94,6 +94,9 @@ app.get('/', routes.index);
 app.get('/TradeData', function(req, res){	
 	res.json(mostRecentTrades);
 });
+app.get('/TradeData?:RecentNum', function(req, res){	
+	res.json(mostRecentTrades);
+});
 
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
