@@ -6,9 +6,10 @@
 // app-specific stuff
 // objects will have:
 // 	a. timestamp
-//	b. quantity_int (divide by 1e8)
-//	c. price_int (divide by 1e8)
+//	b. quantity (divide by 1e8)
+//	c. price (divide by 1e8)
 //	d. exchange name
+//	e. id
 var mostRecentTrades = [];
 
 var express = require('express');
