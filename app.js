@@ -2,12 +2,21 @@
 /**
  * Module dependencies.
  */
+ 
+// app-specific stuff
+// objects will have:
+// 	a. timestamp
+//	b. quantity_int (divide by 1e8)
+//	c. price_int (divide by 1e8)
+//	d. exchange name
+var mostRecentTrades = [];
 
 var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
 var http = require('http');
 var path = require('path');
+var io = require('socket.io-client');
 
 var app = express();
 
@@ -35,8 +44,34 @@ app.get('/', routes.index);
 app.get('/TradeData', function(req, res){
 	var tradeData = {};
 	res.json(tradeData);
+app.get('/TradeData', function(req, res){	
+	res.json(mostRecentTrades);
 });
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+var server = http.createServer(app);
+server.listen(app.get('port'), function(){
+	console.log('Express server listening on port ' + app.get('port'));
+
+	// MtGox trade population
+	var socket = io.connect('socketio.mtgox.com/mtgox?Currency=USD');
+	socket.on('connect', function() {
+		console.log("Connected to MtGox websocket.");
+		var msg = {};
+		msg.op = "mtgox.subscribe";
+		msg.type = "trades";
+		socket.send(msg);
+	});
+	socket.on('message', function(data) {		
+		if(data.op == "private" && data.private == "trade") {
+			console.log("hello");
+			var newTrade = {};
+			
+			newTrade.timestamp = data.trade.tid;
+			newTrade.price_int = data.trade.price_int;
+			newTrade.quantity_int = data.trade.amount_int;
+			newTrade.exchange = "mtgox";
+			
+			mostRecentTrades.push(newTrade);
+		}
+	});
 });
