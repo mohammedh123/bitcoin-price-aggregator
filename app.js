@@ -10,7 +10,7 @@
 //	c. price (divide by 1e8)
 //	d. exchange name
 //	e. id
-var mostRecentTrades = [];
+var mostRecentTrades = {};
 
 var express = require('express');
 var routes = require('./routes');
@@ -50,9 +50,9 @@ function AddTrade(timestamp, price, quantity, exchange, id)
 	newTrade.price = price;
 	newTrade.quantity = quantity;
 	newTrade.exchange = exchange;
-	newTrade.id = id;
+	newTrade.id = parseInt(id, 10);
 	
-	mostRecentTrades.push(newTrade);
+	mostRecentTrades[newTrade.id] = newTrade;
 }
 
 function UpdateTrades() {	
@@ -75,7 +75,7 @@ function UpdateTrades() {
 			res.on('end', function() {			
 				var trades = JSON.parse(body);
 				for(var i = 0; i < trades.length; ++i) {
-				// we now have the trade info in a json object, add it to the list
+					// we now have the trade info in a json object, add it to the list
 					var currTrade = trades[i];
 					
 					AddTrade(currTrade.date, currTrade.price*100000000, currTrade.amount*100000000, "Bitstamp", currTrade.tid);
@@ -110,7 +110,7 @@ server.listen(app.get('port'), function(){
 	});
 	socket.on('message', function(data) {		
 		if(data.op == "private" && data.private == "trade") {
-			AddTrade(data.trade.tid, data.trade.price_int*1000, data.trade.amount_int, "MtGox", data.trade.tid);
+			AddTrade(data.trade.tid/1000000, data.trade.price_int*1000, data.trade.amount_int, "MtGox", data.trade.tid);
 		}
 	});
 	socket.on('disconnect', function() {
