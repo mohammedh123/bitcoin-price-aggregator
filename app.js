@@ -92,9 +92,6 @@ function UpdateTrades() {
 setInterval(UpdateTrades, 10000);
 
 app.get('/', routes.index);
-app.get('/TradeData', function(req, res){
-	var tradeData = {};
-	res.json(tradeData);
 app.get('/TradeData', function(req, res){	
 	res.json(mostRecentTrades);
 });
