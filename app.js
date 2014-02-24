@@ -88,7 +88,7 @@ function UpdateTrades() {
 }
 
 // periodically update the internal trade list (for Bitstamp)
-setInterval(UpdateTrades, 10000);
+setInterval(UpdateTrades, 60000);
 
 app.get('/', routes.index);
 app.get('/TradeData', function(req, res){	
