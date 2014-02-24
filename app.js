@@ -111,14 +111,7 @@ server.listen(app.get('port'), function(){
 	});
 	socket.on('message', function(data) {		
 		if(data.op == "private" && data.private == "trade") {
-			var newTrade = {};
-			
-			newTrade.timestamp = data.trade.tid;
-			newTrade.price_int = data.trade.price_int;
-			newTrade.quantity_int = data.trade.amount_int;
-			newTrade.exchange = "mtgox";
-			
-			mostRecentTrades.push(newTrade);
+			AddTrade(data.trade.tid, data.trade.price_int*1000, data.trade.amount_int, "MtGox", data.trade.tid);
 		}
 	});
 	socket.on('disconnect', function() {
