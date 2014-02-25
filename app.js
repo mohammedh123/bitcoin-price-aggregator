@@ -37,6 +37,22 @@ app.use(app.router);
 app.use(require('stylus').middleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.locals.convertTimestampToDate = function(timestamp) {
+//http://stackoverflow.com/questions/847185/convert-a-unix-timestamp-to-time-in-javascript
+	var date = new Date(parseInt(timestamp/1000));
+	// hours part from the timestamp
+	var hours = date.getHours();
+	// minutes part from the timestamp
+	var minutes = date.getMinutes();
+	// seconds part from the timestamp
+	var seconds = date.getSeconds();
+
+	// will display time in 10:30:23 format
+	var formattedTime = hours + ':' + minutes + ':' + seconds;
+	
+	return formattedTime;
+};
+
 // development only
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
@@ -100,7 +116,9 @@ function UpdateTrades() {
 // periodically update the internal trade list (for Bitstamp)
 setInterval(UpdateTrades, 60000);
 
-app.get('/', routes.index);
+app.get('/', function(req, res) {
+  res.render('index', { title: 'Bitcoin Price Aggregator', trades: GetMostRecentTrades(10) });
+});
 
 // GET /TradeData[?RecentNum=N]
 app.get('/TradeData', function(req, res){	
