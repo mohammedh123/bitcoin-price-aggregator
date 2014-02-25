@@ -3,14 +3,42 @@
   <head>
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script type="text/javascript">
+		setInterval(function() {
+			$.getJSON('/TradeData?RecentNum=10', function(data) {
+				updateTable(data);
+			})
+			.fail(function() {
+				console.log("Failed to retrieve new trade data!");
+			});
+		}, 2000);
+		
+		function convertTimestampToDate(timestamp) {
+			//http://stackoverflow.com/questions/847185/convert-a-unix-timestamp-to-time-in-javascript
+			var date = new Date(parseInt(timestamp/1000));
+			// hours part from the timestamp
+			var hours = date.getHours();
+			// minutes part from the timestamp
+			var minutes = date.getMinutes();
+			// seconds part from the timestamp
+			var seconds = date.getSeconds();
+
+			// will display time in 10:30:23 format
+			var formattedTime = hours + ':' + minutes + ':' + seconds;
+			
+			return formattedTime;
+		};
+
+		function updateTable(jsonData)
+		{
+			$("#main-list").empty();
+			
+			$.each(jsonData, function(key, value) {
+				$("#main-list").append($("<li>" + convertTimestampToDate(value.timestamp) + ", " + value.price/10000000 + ", " + value.quantity/10000000 + ", " + value.exchange + "</li>"));
+			});
+		}
+	</script>
   </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-	<ul>
-    <% trades.forEach(function(trade){ %>
-		<li><%= convertTimestampToDate(trade.timestamp) %>, <%- trade.price/10000000 -%>, <%- trade.quantity/10000000 -%>, <%- trade.exchange -%> </li>
-	<% }) %>
-	</ul>
-  </body>
+  <% include body %>
 </html>

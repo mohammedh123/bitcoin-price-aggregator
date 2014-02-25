@@ -1,0 +1,9 @@
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+	<ul id='main-list'>
+    <% trades.forEach(function(trade){ %>
+		<li><%= convertTimestampToDate(trade.timestamp) %>, <%- trade.price/10000000 -%>, <%- trade.quantity/10000000 -%>, <%- trade.exchange -%> </li>
+	<% }) %>
+	</ul>
+  </body>
